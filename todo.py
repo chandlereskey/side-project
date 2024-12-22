@@ -59,8 +59,6 @@ def update_task_list(n_clicks, new_task, current_tasks):
         dbc.Button("Delete", id={"type": "delete-button", "index": i}, color="failure", className="ml-2", disabled=row[COMPLETED] != 1)
     ], className="list-group-item d-flex justify-content-between align-items-center") for i,row in enumerate(df.values)]
 
-    print(current_tasks)
-
     return current_tasks
 
 # Callback to mark tasks as complete
