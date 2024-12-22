@@ -5,6 +5,7 @@ import dash_bootstrap_components as dbc
 from connection import engine
 import datetime
 import sqlalchemy
+from waitress import serve
 
 # constants
 TODO = 0
@@ -110,4 +111,4 @@ def complete_task(n_clicks, current_tasks):
 
 # Run the app
 if __name__ == "__main__":
-    app.run_server(debug=True)
+    serve(app.server, host="0.0.0.0", port=8050)
