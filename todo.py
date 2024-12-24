@@ -18,7 +18,9 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 # App layout
 app.layout = dbc.Container([
-    dbc.Row([
+    dbc.Tabs(
+            [
+                dbc.Tab(label="Todo", tab_id="todo-tab", children=[dbc.Row([
         dbc.Col(html.H1("To-Do List", className="text-center"), className="mb-4 mt-4")
     ]),
     dbc.Row([
@@ -27,7 +29,13 @@ app.layout = dbc.Container([
     ]),
     dbc.Row([
         dbc.Col(html.Ul(id="task-list", className="list-group mt-4"), width=12)
-    ])
+    ])]),
+                dbc.Tab(label="Graph Example", tab_id="tab-2", children=[html.Div("In Progress")]),
+            ],
+            id="tabs",
+            active_tab="todo-tab",
+        ),
+    
 ], fluid=True)
 
 # Callback to add tasks
@@ -45,12 +53,9 @@ def update_task_list(n_clicks, new_task, current_tasks):
             'createdAt': [datetime.datetime.now()],
             'completedAt': [None]
         })
-        print(df)
         df.to_sql('todos', engine, if_exists='append', index=False)
 
     df = pd.read_sql_table('todos', engine)
-
-    print(df.values)
 
 
     current_tasks = [html.Li([
