@@ -5,7 +5,8 @@ import dash_bootstrap_components as dbc
 from connection import engine
 import datetime
 import sqlalchemy
-from waitress import serve
+dash.register_page(__name__, path='/todos')
+
 
 # constants
 TODO = 0
@@ -13,14 +14,8 @@ COMPLETED = 1
 CREATEDAT = 2
 COMPLETEDAT = 3
 
-# Initialize the app
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
-
 # App layout
-app.layout = dbc.Container([
-    dbc.Tabs(
-            [
-                dbc.Tab(label="Todo", tab_id="todo-tab", children=[dbc.Row([
+layout = dbc.Container([dbc.Row([
         dbc.Col(html.H1("To-Do List", className="text-center"), className="mb-4 mt-4")
     ]),
     dbc.Row([
@@ -29,17 +24,10 @@ app.layout = dbc.Container([
     ]),
     dbc.Row([
         dbc.Col(html.Ul(id="task-list", className="list-group mt-4"), width=12)
-    ])]),
-                dbc.Tab(label="Graph Example", tab_id="tab-2", children=[html.Div("In Progress")]),
-            ],
-            id="tabs",
-            active_tab="todo-tab",
-        ),
-    
-], fluid=True)
+    ])], fluid=True)
 
 # Callback to add tasks
-@app.callback(
+@dash.callback(
     Output("task-list", "children"),
     Input("add-task-button", "n_clicks"),
     State("input-task", "value"),
@@ -67,7 +55,7 @@ def update_task_list(n_clicks, new_task, current_tasks):
     return current_tasks
 
 # Callback to mark tasks as complete
-@app.callback(
+@dash.callback(
     Output("task-list", "children", allow_duplicate=True),
     Input({"type": "complete-button", "index": dash.dependencies.ALL}, "n_clicks"),
     State("task-list", "children"),
@@ -91,7 +79,7 @@ def complete_task(n_clicks, current_tasks):
     return current_tasks
 
 # Callback to mark delete tasks
-@app.callback(
+@dash.callback(
     Output("task-list", "children", allow_duplicate=True),
     Input({"type": "delete-button", "index": dash.dependencies.ALL}, "n_clicks"),
     State("task-list", "children"),
@@ -111,7 +99,3 @@ def complete_task(n_clicks, current_tasks):
         connection.commit()
 
     return current_tasks
-
-# Run the app
-if __name__ == "__main__":
-    serve(app.server, host="0.0.0.0", port=8000)
