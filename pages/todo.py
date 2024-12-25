@@ -34,16 +34,18 @@ layout = dbc.Container([dbc.Row([
     State("task-list", "children")
 )
 def update_task_list(n_clicks, new_task, current_tasks):
-    if n_clicks is not None and new_task is not None:
-        df = pd.DataFrame({
-            'todo': [new_task],
-            'completed': [0],
-            'createdAt': [datetime.datetime.now()],
-            'completedAt': [None]
-        })
-        df.to_sql('todos', engine, if_exists='append', index=False)
+    with engine.connect() as connection:
+        if n_clicks is not None and new_task is not None:
+            df = pd.DataFrame({
+                'todo': [new_task],
+                'completed': [0],
+                'createdAt': [datetime.datetime.now()],
+                'completedAt': [None]
+            })
+            df.to_sql('todos', connection, if_exists='append', index=False)
+        
 
-    df = pd.read_sql_table('todos', engine)
+        df = pd.read_sql_table('todos', connection)
 
 
     current_tasks = [html.Li([
@@ -51,7 +53,6 @@ def update_task_list(n_clicks, new_task, current_tasks):
         dbc.Button("Complete", id={"type": "complete-button", "index": i}, color="success", className="ml-2", disabled=row[COMPLETED] == 1),
         dbc.Button("Delete", id={"type": "delete-button", "index": i}, color="failure", className="ml-2", disabled=row[COMPLETED] != 1)
     ], className="list-group-item d-flex justify-content-between align-items-center") for i,row in enumerate(df.values)]
-
     return current_tasks
 
 # Callback to mark tasks as complete
