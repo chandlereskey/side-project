@@ -25,7 +25,13 @@ layout = layout = dbc.Container([
         dbc.Col(dbc.Card(
             dbc.CardBody([
                 html.H4("Graphing", className="card-title"),
-                html.P("This is still in progress (not really even started) but I want to add a graph like a map or something to see data of something of the US.", className="card-text")
+                html.P("This is a simple dashboard page with two graphs, one a visual, colored map of the us and a simple bar chart. The data for this is from https://public.tableau.com/app/learn/sample-data stored in a single table in the same database as the data for todos.", className="card-text")
+            ])
+        ), width=4),
+                dbc.Col(dbc.Card(
+            dbc.CardBody([
+                html.H4("Face Detection", className="card-title"),
+                html.P("This page is a simple 'face detection' application where you can post images of yourself and it will start a live video feed and classify who is in the video.", className="card-text")
             ])
         ), width=4)
     ]),

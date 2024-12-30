@@ -1,7 +1,7 @@
 import dash
 from dash import html
 import dash_bootstrap_components as dbc
-from waitress import serve
+# from waitress import serve
 
 app = dash.Dash(__name__, use_pages=True, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
@@ -9,7 +9,8 @@ navbar = dbc.NavbarSimple(
     children=[
         dbc.NavItem(dbc.NavLink("Home", href="/")),
         dbc.NavItem(dbc.NavLink("Todos", href="/todos")),
-        dbc.NavItem(dbc.NavLink("Graphing", href="/graphing"))
+        dbc.NavItem(dbc.NavLink("Graphing", href="/graphing")),
+        dbc.NavItem(dbc.NavLink("Face Detection", href="/face-detection")),
     ],
     brand="Chandler Starter Website",
     color="dark",
@@ -22,4 +23,5 @@ app.layout = html.Div([
 ])
 
 if __name__ == '__main__':
-    serve(app.server, host="0.0.0.0", port=8000)
+    # serve(app.server, host="0.0.0.0", port=8000)
+    app.run_server(port=8000)
