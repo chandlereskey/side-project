@@ -3,10 +3,9 @@ import dash
 from dash import dcc, Input, Output, html, State
 import dash_bootstrap_components as dbc
 import numpy as np
-import plotly.express as px
-from face_detection.generate_embeddings import generate_embeddings
+from face_detection_helpers.generate_embeddings import generate_embeddings
 import cv2
-from face_detection.detect_face_and_return_frame import embeddings, detect_faces
+from face_detection_helpers.detect_face_and_return_frame import embeddings, detect_faces
 
 
 dash.register_page(__name__, path='/face-detection')

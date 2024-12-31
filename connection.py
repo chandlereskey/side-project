@@ -1,10 +1,5 @@
-import datetime
 import urllib
-
-import pyodbc
-import pandas as pd
 import os
-
 import sqlalchemy
 from dotenv import load_dotenv
 
