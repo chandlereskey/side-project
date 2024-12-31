@@ -27,7 +27,6 @@ layout = dbc.Container([
     Input("image-uploader", "contents"),
 )
 def generate_embeddings_callback(contents):
-    print(contents)
     generate_embeddings(contents)
 
 @dash.callback(
@@ -39,7 +38,6 @@ def generate_embeddings_callback(contents):
 def detect_faces_callback(interval, image):
     if image is None:
         return None, True
-    print('image:', image[:20])
     image = image.replace('data:image/jpeg;base64,', '')
 
     # turn the base64 image into a numpy array
