@@ -5,7 +5,6 @@ import numpy
 import numpy as np
 from imgbeddings import imgbeddings
 from PIL import Image
-import os
 
 haar_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 
