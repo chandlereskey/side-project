@@ -17,8 +17,10 @@ layout = dbc.Container([
     dbc.Row([dcc.Upload(id='image-uploader', children=dbc.Button('Upload Image'), multiple=True),
     dbc.Button('Start Camera', id='camera-toggle')]),
     html.Video(id='client-side-video', autoPlay=True, controls=True, hidden=True),
+    html.Img(id='detected-faces', hidden=True),
     dcc.Store(id='client-side-video-store'),
-    dcc.Interval(id='interval', interval=1000, n_intervals=0),
+    dcc.Interval(id='interval', interval=500, n_intervals=0),
+    dcc.Interval(id='interval2', interval=500, n_intervals=0),
     ]
     , fluid=True)
 
@@ -30,10 +32,29 @@ def generate_embeddings_callback(contents):
     generate_embeddings(contents)
 
 @dash.callback(
-    Input('client-side-video-store', 'data'),
+    Output('detected-faces', 'src'),
+    Output('detected-faces', 'hidden'),
+    Input('interval2', 'n_intervals'),
+    State('client-side-video-store', 'data')
 )
-def detect_faces_callback(image):
-    print(image)
+def detect_faces_callback(interval, image):
+    if image is None:
+        return None, True
+    print('image:', image[:20])
+    image = image.replace('data:image/jpeg;base64,', '')
+
+    # turn the base64 image into a numpy array
+    img = base64.b64decode(image)
+    np_frame = np.frombuffer(img, dtype=np.uint8)
+    img = cv2.imdecode(np_frame, cv2.IMREAD_COLOR)
+    # detect faces in the image
+    frame = detect_faces(img, embeddings)
+    # encode the frame back to base64
+    _, buffer = cv2.imencode('.jpg', frame)
+    frame = base64.b64encode(buffer).decode('utf-8')
+    return 'data:image/jpeg;base64,' + frame, False
+    
+
 
 @dash.callback(
     Output('camera-toggle', 'children'),
@@ -60,7 +81,6 @@ dash.clientside_callback(
             console.log('Stopping camera')
             video.srcObject.getTracks().forEach(track => track.stop());
             video.srcObject = null;
-            return null;
         }
 
         navigator.getUserMedia = navigator.mediaDevices.getUserMedia ||
@@ -81,13 +101,36 @@ dash.clientside_callback(
             };
         }) 
         console.log('media data', media)
-        return media;
     }
     """,
-    Output('client-side-video-store', 'data'),
     Input('camera-toggle', 'n_clicks'),
     State('camera-toggle', 'children'),
     prevent_initial_call=True
+)
+
+dash.clientside_callback(
+    """
+    function(n_intervals) {
+        var video = document.getElementById('client-side-video');
+        console.log('video:', video)
+        if (!video || !video.srcObject) {
+            return null;
+        }
+        
+
+        var canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        var context = canvas.getContext('2d');
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        var frame = canvas.toDataURL('image/jpeg');
+        console.log('frame:', frame)
+        
+        return frame; // Return base64 encoded image
+    }
+    """,
+    Output('client-side-video-store', 'data'),
+    Input('interval', 'n_intervals')
 )
 
 
