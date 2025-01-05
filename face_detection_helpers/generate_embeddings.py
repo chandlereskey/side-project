@@ -6,6 +6,7 @@ import numpy as np
 from imgbeddings import imgbeddings
 from PIL import Image
 
+
 haar_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 
 def generate_embeddings(images):
@@ -22,9 +23,7 @@ def generate_embeddings(images):
         img = numpy.array(pil_img)
 
         gray_img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-        
-        #display image
-        cv2.imshow('image', gray_img)
+
 
         face = haar_cascade.detectMultiScale(
             gray_img, scaleFactor=1.05, minNeighbors=1, minSize=(100, 100)
@@ -39,6 +38,4 @@ def generate_embeddings(images):
             print(np.array(embedding[0].tolist()).reshape(1, -1).shape)
             embeddings.append(embedding[0].tolist())
 
-    with open('embeddings.txt', 'w+') as file:
-        print('writing embeddings to file', embeddings)
-        file.write(str(embeddings))
+    return embeddings

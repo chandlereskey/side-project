@@ -3,17 +3,32 @@ import dash
 from dash import dcc, Input, Output, html, State
 import dash_bootstrap_components as dbc
 import numpy as np
+import pandas as pd
 from face_detection_helpers.generate_embeddings import generate_embeddings
 import cv2
-from face_detection_helpers.detect_face_and_return_frame import embeddings, detect_faces
-
+from face_detection_helpers.detect_face_and_return_frame import detect_faces
+from connection import engine
 
 dash.register_page(__name__, path='/face-detection')
 
+def get_embeddings():
+    embeddings_df = pd.read_sql('select * from dbo.user_image_embeddings', engine)
+    embeddings = {}
+    for i, row in embeddings_df.iterrows():
+        print('getting embeddings dict', i, row)
+        if row['user'] not in embeddings:
+            embeddings[row['user']] = np.array([])
+        
+        np.append(embeddings[row['user']], np.array(row['image_embedding']))
+    return embeddings
+
+embeddings_dict = get_embeddings()
 
 
 layout = dbc.Container([
-    dbc.Row([dcc.Upload(id='image-uploader', children=dbc.Button('Upload Image'), multiple=True),
+    html.H1('Face Detection'),
+    dbc.Row([dbc.Input(id='user-name', placeholder='Enter your name'), dbc.Button(id='save-name', children='Save')]),
+    dbc.Row([dcc.Upload(id='image-uploader', children=dbc.Button('Upload Image'), multiple=True, disabled=True),
     dbc.Button('Start Camera', id='camera-toggle')]),
     html.Video(id='client-side-video', autoPlay=True, controls=True, hidden=True),
     html.Img(id='detected-faces', hidden=True),
@@ -24,10 +39,33 @@ layout = dbc.Container([
     , fluid=True)
 
 @dash.callback(
-    Input("image-uploader", "contents"),
+    Output('image-uploader', 'disabled'),
+    Input('save-name', 'n_clicks'),
+    prevent_initial_call=True
 )
-def generate_embeddings_callback(contents):
-    generate_embeddings(contents)
+def show_image_uploader(n_clicks):
+    if n_clicks is None:
+        return True
+    return False
+
+@dash.callback(
+    Input("image-uploader", "contents"),
+    State("user-name", "value")
+)
+def generate_embeddings_callback(contents, user_name):
+    embeddings = generate_embeddings(contents)
+    user_input_list = [user_name for i in range(len(embeddings))]
+    print(embeddings[0])
+    emb_df = pd.DataFrame({
+                'user': user_input_list,
+                'image_embedding': [str(embedding) for embedding in embeddings]
+            })
+    with engine.connect() as connection:
+        print('writing embeddings to db', emb_df['user'][0], emb_df['image_embedding'][0][:10])
+        emb_df.to_sql('user_image_embeddings', connection, if_exists='append', index=False)
+    global embeddings_dict
+    embeddings_dict = get_embeddings()
+    
 
 @dash.callback(
     Output('detected-faces', 'src'),
@@ -45,7 +83,7 @@ def detect_faces_callback(interval, image):
     np_frame = np.frombuffer(img, dtype=np.uint8)
     img = cv2.imdecode(np_frame, cv2.IMREAD_COLOR)
     # detect faces in the image
-    frame = detect_faces(img, embeddings)
+    frame = detect_faces(img, embeddings_dict)
     # encode the frame back to base64
     _, buffer = cv2.imencode('.jpg', frame)
     frame = base64.b64encode(buffer).decode('utf-8')
@@ -129,22 +167,4 @@ dash.clientside_callback(
     Output('client-side-video-store', 'data'),
     Input('interval', 'n_intervals')
 )
-
-
-# @dash.callback(
-#     Output('live-webcam-feed', 'figure'),
-#     Input('interval', 'n_intervals')
-# )
-# def detect_faces_callback(n):
-#     cap = cv2.VideoCapture(0)
-#     ret, frame = cap.read()
-#     # Decode the frame data
-#     frame = base64.b64decode(frame)
-#     np_frame = np.frombuffer(frame, dtype=np.uint8)
-#     img = cv2.imdecode(np_frame, cv2.IMREAD_COLOR)
-    
-#     # Convert the image to a Plotly figure
-#     fig = px.imshow(img)
-#     fig.update_layout(margin=dict(l=0, r=0, t=0, b=0))
-#     return fig
 
