@@ -1,4 +1,6 @@
+import ast
 import base64
+import json
 import dash
 from dash import dcc, Input, Output, html, State
 import dash_bootstrap_components as dbc
@@ -17,9 +19,11 @@ def get_embeddings():
     for i, row in embeddings_df.iterrows():
         print('getting embeddings dict', i, row)
         if row['user'] not in embeddings:
-            embeddings[row['user']] = np.array([])
+            embeddings[row['user']] = []
         
-        np.append(embeddings[row['user']], np.array(row['image_embedding']))
+        embeddings[row['user']].append(json.loads(row['image_embedding']))
+    for user, user_embeddings in embeddings.items():
+        embeddings[user] = np.array(user_embeddings)
     return embeddings
 
 embeddings_dict = get_embeddings()
