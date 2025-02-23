@@ -120,6 +120,7 @@ dash.clientside_callback(
             console.log('Stopping camera')
             video.srcObject.getTracks().forEach(track => track.stop());
             video.srcObject = null;
+            return
         }
 
         navigator.getUserMedia = navigator.mediaDevices.getUserMedia ||

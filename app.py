@@ -11,6 +11,7 @@ navbar = dbc.NavbarSimple(
         dbc.NavItem(dbc.NavLink("Todos", href="/todos")),
         dbc.NavItem(dbc.NavLink("Graphing", href="/graphing")),
         dbc.NavItem(dbc.NavLink("Face Detection", href="/face-detection")),
+        dbc.NavItem(dbc.NavLink("Number Guesser (In progress...)", href="/number-guesser")),
     ],
     brand="Chandler Starter Website",
     color="dark",
