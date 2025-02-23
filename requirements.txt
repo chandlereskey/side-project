@@ -13,3 +13,4 @@ pillow~=10.2.0
 scikit-learn~=1.4.0
 tensorflow
 huggingface-hub==0.24.0
+dash-canvas
